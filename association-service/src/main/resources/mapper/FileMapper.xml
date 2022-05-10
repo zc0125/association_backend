@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.dao.FileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.feng.entity.File">
+        <id column="id" property="id" />
+        <result column="file_name" property="fileName" />
+        <result column="file_path" property="filePath" />
+        <result column="create_time" property="createTime" />
+        <result column="file_type_id" property="fileTypeId" />
+        <result column="passage_id" property="passageId" />
+        <result column="activity_id" property="activityId" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <resultMap id="fileListMap" type="com.feng.dto.FileDto">
+        <id column="id" property="id" />
+        <result column="file_name" property="fileName" />
+        <result column="file_path" property="filePath" />
+        <result column="create_time" property="createTime" />
+        <result column="file_type_id" property="fileTypeId" />
+        <result column="passage_id" property="passageId" />
+        <result column="activity_id" property="activityId" />
+        <result column="user_id" property="userId" />
+        <association property="fileType" javaType="com.feng.entity.FileType">
+            <id column="file_type_id" property="id"/>
+            <result column="file_type" property="type"/>
+        </association>
+        <association property="passage" javaType="com.feng.entity.Passage">
+            <id column="passage_id" property="id"/>
+            <result column="passage_title" property="title"/>
+        </association>
+        <association property="activity" javaType="com.feng.entity.Activity">
+            <id column="activity_id" property="id"/>
+            <result column="activity_name" property="activityName"/>
+        </association>
+        <association property="user" javaType="com.feng.entity.User">
+            <id column="user_id" property="id"/>
+            <result column="user_name" property="name"/>
+            <result column="role_id" property="roleId"/>
+        </association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, file_name, file_path, create_time, file_type_id, passage_id, activity_id,user_id
+    </sql>
+
+    <insert id="save" parameterType="com.feng.entity.File" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+     INSERT INTO file(file_name,file_path,file_type_id,passage_id,activity_id)
+     VALUES (#{fileName},#{filePath},#{fileTypeId},#{passageId},#{activityId})
+    </insert>
+
+    <select id="findFile" resultMap="fileListMap" parameterType="com.feng.entity.File">
+        SELECT f.*,ft.type AS file_type,p.title AS passage_title,a.activity_name AS activity_name,u.`name` AS user_name,u.role_id FROM
+        file f LEFT JOIN file_type ft ON f.file_type_id = ft.id
+        LEFT JOIN passage p ON f.passage_id = p.id
+        LEFT JOIN activity a ON f.activity_id = a.id
+        LEFT JOIN `user` u ON f.user_id = u.id
+        WHERE
+        1 > 0
+        <if test="fileTypeId !=null ">
+            AND f.file_type_id = #{fileTypeId}
+        </if>
+        <if test="fileName != null and fileName != '' ">
+            AND f.file_name LIKE CONCAT('%', #{fileName},'%')
+        </if>
+    </select>
+</mapper>

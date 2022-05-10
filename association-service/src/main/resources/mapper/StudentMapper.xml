@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.dao.StudentMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.feng.entity.Student">
+        <result column="num" property="num" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="age" property="age" />
+        <result column="institute" property="institute" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="password" property="password" />
+    </resultMap>
+
+    <resultMap id="infoResultMap" type="com.feng.dto.StudentDto">
+        <result column="num" property="num" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="sex_name" property="sexName" />
+        <result column="age" property="age" />
+        <result column="institute" property="institute" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="password" property="password" />
+        <result column="club_id" property="clubId" />
+        <association property="userClub" javaType="com.feng.entity.UserClub">
+            <id column="user_club_id" property="id"/>
+            <result column="num" property="userId"/>
+            <result column="club_id" property="clubId"/>
+        </association>
+        <association property="club" javaType="com.feng.entity.Club">
+            <id column="club_id" property="num"/>
+            <result column="club_name" property="name"/>
+        </association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        num, name, sex, age,institute, email, phone, password
+    </sql>
+
+    <select id="getStudentByNum" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM student s
+        WHERE s.num = #{account}
+    </select>
+
+    <select id="getByLogin" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT * FROM student s
+        WHERE s.num = #{account}
+        OR s.email = #{account}
+        OR s.phone = #{account}
+    </select>
+
+    <select id="selectStudentByClubId" resultMap="infoResultMap" parameterType="com.feng.dto.StudentDto">
+        SELECT s.*,
+        CASE
+        WHEN s.sex=0 THEN '保密'
+        WHEN s.sex=1 THEN '男'
+        WHEN s.sex=2 THEN '女'
+        END AS sex_name,
+        u.id AS user_club_id,u.club_id AS club_id,
+        c.`name` AS club_name
+        FROM user_club u
+        LEFT JOIN student s ON u.user_id = s.num
+        LEFT JOIN club c ON u.club_id = c.num
+        WHERE
+        <if test="name == null or name == ''">
+            u.club_id = #{clubId}
+        </if>
+        <if test="name != null and name != '' ">
+            u.club_id = #{clubId} AND
+            (s.num = #{name} OR s.name = #{name})
+        </if>
+
+    </select>
+
+    <select id="selectClubByStudentNum" resultMap="infoResultMap" parameterType="java.lang.String">
+        SELECT s.*,
+        CASE
+        WHEN s.sex=0 THEN '保密'
+        WHEN s.sex=1 THEN '男'
+        WHEN s.sex=2 THEN '女'
+        END AS sex_name,
+        u.id AS user_club_id,u.club_id AS club_id,
+        c.`name` AS club_name
+        FROM user_club u
+        LEFT JOIN student s ON u.user_id = s.num
+        LEFT JOIN club c ON u.club_id = c.num
+        WHERE u.user_id = #{userId}
+
+    </select>
+
+</mapper>

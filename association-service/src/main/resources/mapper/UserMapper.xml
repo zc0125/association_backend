@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.dao.UserMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.feng.entity.User">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="institute" property="institute" />
+        <result column="club_id" property="clubId" />
+        <result column="account" property="account" />
+        <result column="password" property="password" />
+        <result column="role_id" property="roleId" />
+        <result column="create_time" property="createTime" />
+        <result column="is_active" property="isActive" />
+        <result column="last_login_time" property="lastLoginTime" />
+    </resultMap>
+
+    <resultMap id="BaseDtoResultMap" type="com.feng.dto.UserDto">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="sex" property="sex" />
+        <result column="sex_name" property="sexName" />
+        <result column="institute" property="institute" />
+        <result column="club_name" property="clubName" />
+        <result column="account" property="account" />
+        <result column="password" property="password" />
+        <result column="role_name" property="roleName" />
+        <result column="create_time" property="createTime" />
+        <result column="is_active" property="isActive" />
+        <result column="last_login_time" property="lastLoginTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List" >
+        id, name, sex, institute, club_id, account, password, rloe_id, create_time, is_active, last_login_time
+    </sql>
+
+    <select id="selectUserById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select c.`name` AS last_login_time, u.*
+        from `user` u , club c
+        where u.club_id = c.num AND u.id = #{id}
+
+    </select>
+
+    <select id="selectAll" resultMap="BaseDtoResultMap" >
+
+        SELECT `user`.*,club.`name` as club_name , user_role.role_name as role_name,
+        CASE
+        WHEN `user`.sex=0 THEN '保密'
+        WHEN `user`.sex=1 THEN '男'
+        WHEN `user`.sex=2 THEN '女'
+        END AS sex_name
+        FROM `user`
+        LEFT JOIN club ON `user`.club_id = club.num
+        LEFT JOIN user_role ON `user`.role_id = user_role.id
+
+
+    </select>
+
+    <select id="findBySearch" resultMap="BaseDtoResultMap" parameterType="java.lang.String">
+
+        SELECT `user`.*,club.`name` as club_name , user_role.role_name as role_name,
+        CASE
+        WHEN `user`.sex=0 THEN '保密'
+        WHEN `user`.sex=1 THEN '男'
+        WHEN `user`.sex=2 THEN '女'
+        END AS sex_name
+        FROM `user`
+        LEFT JOIN club ON `user`.club_id = club.num
+        LEFT JOIN user_role ON `user`.role_id = user_role.id
+        WHERE `user`.`name` LIKE CONCAT('%', #{search},'%')
+        OR `user`.account LIKE CONCAT('%', #{search},'%')
+
+    </select>
+
+
+
+</mapper>

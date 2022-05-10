@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.dao.UserClubMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.feng.entity.UserClub">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="club_id" property="clubId" />
+    </resultMap>
+
+    <resultMap id="infoResultMap" type="com.feng.dto.UserClubDto">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="club_id" property="clubId" />
+        <association property="club" javaType="com.feng.entity.Club">
+            <id column="club_id" property="num"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, user_id , club_id
+    </sql>
+
+    <select id="selectClubByStudentNum" resultMap="infoResultMap" parameterType="java.lang.String">
+        SELECT * FROM
+        user_club LEFT JOIN club ON user_club.club_id = club.num
+        WHERE user_id = #{userId}
+
+    </select>
+
+</mapper>
